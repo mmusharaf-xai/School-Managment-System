@@ -1,12 +1,7 @@
-import { Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppNavigator } from './src/navigation';
 
 function App() {
-  return (
-    <SafeAreaView>
-      <Text>Apps</Text>
-    </SafeAreaView>
-  )
+  return <AppNavigator />;
 }
 
-export default App
+export default App;
