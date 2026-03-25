@@ -7,13 +7,17 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../utils/colors';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { getQuickAccessConfig, QuickAccessConfig } from '../services/quickAccessService';
+import { getDefaultMenuItems } from '../services/schoolSidebarService';
+import { SidebarMenuItem } from '../components/school';
 import { useAuth } from '../contexts';
+import SchoolLayout from '../components/school/SchoolLayout';
 
 type QuickAccessScreenProps = NativeStackScreenProps<RootStackParamList, 'QuickAccess'>;
 
@@ -190,23 +194,101 @@ const QuickAccessScreen: React.FC<QuickAccessScreenProps> = ({ route, navigation
     );
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{config?.school.name || 'School'}</Text>
-        <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person-circle" size={28} color={colors.schoolNavy} />
-        </TouchableOpacity>
-      </View>
+  const menuItems: SidebarMenuItem[] = getDefaultMenuItems('owner');
+  const currentMenuItem = 'quick_access';
 
-      {/* Loading / Content */}
-      {loading ? (
-        renderSkeleton()
-      ) : error ? (
+  const handleMenuItemPress = (item: SidebarMenuItem) => {
+    if (item.accessible && item.route !== 'QuickAccess') {
+      navigation.navigate(item.route as any, { schoolId });
+    }
+  };
+
+  const handleBackToSchools = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
+  };
+
+  // Disable hardware back button on school pages
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // Only allow back via "Back to My Schools" button
+      return true;
+    });
+    return () => backHandler.remove();
+  }, []);
+
+  // Render the quick access content
+  const renderQuickAccessContent = () => {
+    if (!config) return null;
+    return (
+      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.welcomeMessage}>{config.welcomeMessage}</Text>
+        <View style={styles.statsGrid}>
+          {config.stats.map((stat) => (
+            <View key={stat.id} style={styles.statCard}>
+              <View style={[styles.statIcon, { backgroundColor: stat.color + '20' }]}>
+                <Ionicons name={stat.icon as any} size={20} color={stat.color} />
+              </View>
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
+          <View style={styles.quickActionsList}>
+            {config.quickActions.map((action) => (
+              <TouchableOpacity
+                key={action.id}
+                style={styles.quickActionItem}
+                onPress={() => console.log('Action:', action.id)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.quickActionLeft}>
+                  <View style={styles.quickActionIcon}>
+                    <Ionicons name={action.icon as any} size={20} color={colors.schoolNavy} />
+                  </View>
+                  <View style={styles.quickActionText}>
+                    <Text style={styles.quickActionTitle}>{action.title}</Text>
+                    <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        {config.setupProgress && (
+          <View style={styles.setupCard}>
+            <View style={styles.setupContent}>
+              <Text style={styles.setupMessage}>{config.setupProgress.message}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.setupButton}
+              onPress={() => console.log('CTA:', config.setupProgress?.ctaAction)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.setupButtonText}>{config.setupProgress.ctaText}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
+    );
+  };
+
+  return (
+    <SchoolLayout
+      schoolId={schoolId}
+      schoolName={config?.school.name || 'School'}
+      menuItems={menuItems}
+      activeItem={currentMenuItem}
+      onMenuItemPress={handleMenuItemPress}
+      onBackToSchools={handleBackToSchools}
+      onProfilePress={() => navigation.navigate('AccountSettings')}
+    >
+      {loading ? renderSkeleton() : error ? (
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.textMuted} />
           <Text style={styles.errorText}>{error}</Text>
@@ -215,9 +297,9 @@ const QuickAccessScreen: React.FC<QuickAccessScreenProps> = ({ route, navigation
           </TouchableOpacity>
         </View>
       ) : (
-        renderContent()
+        renderQuickAccessContent()
       )}
-    </SafeAreaView>
+    </SchoolLayout>
   );
 };
 

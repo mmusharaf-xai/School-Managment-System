@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { LoginScreen, SignupScreen, HomeScreen, AccountSettingsScreen, RegisterSchoolScreen, QuickAccessScreen } from '../screens';
+import { LoginScreen, SignupScreen, HomeScreen, AccountSettingsScreen, RegisterSchoolScreen, QuickAccessScreen, SchoolPlaceholderScreen } from '../screens';
 import { initDb } from '../../db/connection';
 import { AuthProvider } from '../contexts';
 
@@ -12,6 +12,13 @@ export type RootStackParamList = {
   AccountSettings: undefined;
   RegisterSchool: undefined;
   QuickAccess: { schoolId: number };
+  Staffs: { schoolId: number };
+  Students: { schoolId: number };
+  Assets: { schoolId: number };
+  Invoices: { schoolId: number };
+  Classes: { schoolId: number };
+  Settings: { schoolId: number };
+  SchoolPlaceholder: { moduleName: string; schoolId?: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -53,6 +60,13 @@ const AppNavigator: React.FC = () => {
           <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
           <Stack.Screen name="RegisterSchool" component={RegisterSchoolScreen} />
           <Stack.Screen name="QuickAccess" component={QuickAccessScreen} />
+          <Stack.Screen name="Staffs" component={SchoolPlaceholderScreen} />
+          <Stack.Screen name="Students" component={SchoolPlaceholderScreen} />
+          <Stack.Screen name="Assets" component={SchoolPlaceholderScreen} />
+          <Stack.Screen name="Invoices" component={SchoolPlaceholderScreen} />
+          <Stack.Screen name="Classes" component={SchoolPlaceholderScreen} />
+          <Stack.Screen name="Settings" component={SchoolPlaceholderScreen} />
+          <Stack.Screen name="SchoolPlaceholder" component={SchoolPlaceholderScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </AuthProvider>
