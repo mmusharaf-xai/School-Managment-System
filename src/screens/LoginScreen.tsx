@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoginScreenHeader, LoginForm } from '../components/login';
-import { FormLink } from '../components/shared';
 import { colors } from '../utils/colors';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
@@ -37,11 +36,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <LoginForm
               onLoginSuccess={onLoginSuccess}
               onNavigateToSignup={onNavigateToSignup}
-            />
-            <FormLink
-              text="Don't have an account?"
-              linkText="Sign Up"
-              onPress={onNavigateToSignup}
             />
           </View>
         </ScrollView>

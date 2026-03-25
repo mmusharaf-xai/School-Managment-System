@@ -85,6 +85,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onNavigateToSignu
       </View>
 
       <FormError message={generalError} />
+
+      <TouchableOpacity onPress={onNavigateToSignup} style={styles.signupLink}>
+        <Text style={styles.signupText}>
+          Don't have an account? <Text style={styles.signupLinkText}>Sign Up</Text>
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -103,6 +109,18 @@ const styles = StyleSheet.create({
   },
   submitContainer: {
     paddingTop: 16,
+  },
+  signupLink: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  signupText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  signupLinkText: {
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
 });
 

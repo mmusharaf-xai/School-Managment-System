@@ -130,12 +130,13 @@ export const changePassword = async (
     }
 
     // Update password
+    const updateData: Record<string, unknown> = {
+      password: newPassword,
+      updatedAt: new Date().toISOString(),
+    };
     await db
       .update(users)
-      .set({
-        password: newPassword,
-        updatedAt: new Date().toISOString(),
-      })
+      .set(updateData as any)
       .where(eq(users.id, userId));
 
     return { success: true };
