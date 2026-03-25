@@ -18,6 +18,7 @@ import { colors } from '../../utils/colors';
 import { getUserSchools, createSchool, joinSchool } from '../../services/schoolService';
 import { School, UserSchool } from '../../../db/schema';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { useAuth } from '../../contexts';
 
 interface UserSchoolWithSchool extends UserSchool {
   school: School;
@@ -28,6 +29,9 @@ interface HomeScreenContentProps {
 }
 
 const HomeScreenContent: React.FC<HomeScreenContentProps> = ({ navigation }) => {
+  const { user } = useAuth();
+  const currentUserId = user?.id;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [schools, setSchools] = useState<UserSchoolWithSchool[]>([]);
   const [filteredSchools, setFilteredSchools] = useState<UserSchoolWithSchool[]>([]);
@@ -36,10 +40,8 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({ navigation }) => 
   const [joinModalVisible, setJoinModalVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // TODO: Get actual user ID from auth context/state
-  const currentUserId = 1;
-
   const fetchSchools = useCallback(async () => {
+    if (!currentUserId) return;
     const result = await getUserSchools(currentUserId);
     if (result.success && result.userSchools) {
       setSchools(result.userSchools as UserSchoolWithSchool[]);
@@ -50,8 +52,10 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({ navigation }) => 
   }, [currentUserId]);
 
   useEffect(() => {
-    fetchSchools();
-  }, [fetchSchools]);
+    if (currentUserId) {
+      fetchSchools();
+    }
+  }, [fetchSchools, currentUserId]);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -75,6 +79,9 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({ navigation }) => 
   };
 
   const handleCreateSchool = async (name: string, description: string) => {
+    if (!currentUserId) {
+      throw new Error('User not logged in');
+    }
     setActionLoading(true);
     const result = await createSchool(name, description || null, currentUserId);
     setActionLoading(false);
@@ -87,6 +94,9 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({ navigation }) => 
   };
 
   const handleJoinSchool = async (code: string) => {
+    if (!currentUserId) {
+      throw new Error('User not logged in');
+    }
     setActionLoading(true);
     const result = await joinSchool(code, currentUserId);
     setActionLoading(false);
@@ -298,19 +308,19 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   actionContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 12,
   },
   primaryButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     padding: 16,
     backgroundColor: colors.schoolNavy,
     borderRadius: 12,
+    width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -336,7 +346,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   secondaryButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -345,6 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
+    width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,

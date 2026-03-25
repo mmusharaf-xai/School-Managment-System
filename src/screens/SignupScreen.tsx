@@ -12,15 +12,23 @@ import { SignupScreenHeader, SignupForm } from '../components/signup';
 import { FormLink } from '../components/shared';
 import { colors } from '../utils/colors';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { useAuth } from '../contexts';
+import { User } from '../../db/schema';
 
 type SignupScreenProps = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
 const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
+  const { setUser } = useAuth();
+
   const onNavigateToLogin = () => navigation.navigate('Login');
-  const onSignupSuccess = () => navigation.reset({
-    index: 0,
-    routes: [{ name: 'Home' }],
-  });
+  const onSignupSuccess = (user: User) => {
+    setUser(user);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView

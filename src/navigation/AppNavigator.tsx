@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LoginScreen, SignupScreen, HomeScreen, AccountSettingsScreen } from '../screens';
 import { initDb } from '../../db/connection';
+import { AuthProvider } from '../contexts';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -35,20 +36,22 @@ const AppNavigator: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        id={undefined}
-        initialRouteName="Login"
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Signup" component={SignupScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          id={undefined}
+          initialRouteName="Login"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
   );
 };
 
