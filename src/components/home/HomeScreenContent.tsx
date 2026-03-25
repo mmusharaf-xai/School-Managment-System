@@ -114,7 +114,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({ navigation }) => 
           {item.school.name}
         </Text>
         <Text style={styles.schoolMeta} numberOfLines={1}>
-          {item.role.charAt(0).toUpperCase() + item.role.slice(1)} • Since 2024
+          {item.role.toUpperCase()} • Since {new Date().getFullYear()}
         </Text>
       </View>
       <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
@@ -195,9 +195,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({ navigation }) => 
       <View style={styles.schoolsSection}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Your Schools</Text>
-          {filteredSchools.length > 0 && (
-            <Text style={styles.viewAllText}>View All</Text>
-          )}
         </View>
 
         <FlatList
@@ -367,11 +364,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: colors.schoolNavy,
-  },
-  viewAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.schoolAccent,
   },
   listContent: {
     flexGrow: 1,

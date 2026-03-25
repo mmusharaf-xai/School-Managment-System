@@ -107,11 +107,12 @@ export const createSchool = async (
 
     const school = result[0];
 
-    // Automatically add the creator as an admin
+    // Automatically add the creator as owner
     await db.insert(userSchools).values({
       userId: userId,
       schoolId: school.id,
-    });
+      role: 'owner',
+    } as any);
 
     return { success: true, school };
   } catch (error) {
@@ -224,7 +225,7 @@ export const registerSchool = async (
       userId: userId,
       schoolId: school.id,
       role: 'owner',
-    });
+    } as any);
 
     return { success: true, school };
   } catch (error) {

@@ -59,6 +59,29 @@ const RegisterSchoolScreen: React.FC<RegisterSchoolScreenProps> = ({ navigation 
       setError('Address is required');
       return false;
     }
+    // Validate email format if provided
+    if (email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setError('Please enter a valid email address');
+        return false;
+      }
+    }
+    // Validate phone number format if provided
+    if (phoneNumber.trim()) {
+      // Allow digits, spaces, parentheses, hyphens, and + sign
+      const phoneRegex = /^[\d\s\-\(\)\+]+$/;
+      if (!phoneRegex.test(phoneNumber.trim())) {
+        setError('Please enter a valid phone number');
+        return false;
+      }
+      // Check minimum length (at least 7 digits)
+      const digitsOnly = phoneNumber.replace(/\D/g, '');
+      if (digitsOnly.length < 7) {
+        setError('Phone number must have at least 7 digits');
+        return false;
+      }
+    }
     return true;
   };
 
