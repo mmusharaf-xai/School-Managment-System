@@ -5,10 +5,10 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
-  SafeAreaView,
   Animated,
   PanResponder,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../utils/colors';
 import SchoolSidebar, { SidebarMenuItem } from './SchoolSidebar';
@@ -65,18 +65,14 @@ const SchoolLayout: React.FC<SchoolLayoutProps> = ({
       if (isClosing.current) return;
       isClosing.current = true;
 
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: -SIDEBAR_WIDTH,
-          duration: ANIMATION_DURATION,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropOpacity, {
-          toValue: 0,
-          duration: ANIMATION_DURATION,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
+      // Remove gray backdrop immediately
+      backdropOpacity.setValue(0);
+
+      Animated.timing(slideAnim, {
+        toValue: -SIDEBAR_WIDTH,
+        duration: ANIMATION_DURATION,
+        useNativeDriver: true,
+      }).start(() => {
         setSidebarVisible(false);
         isClosing.current = false;
         if (onComplete) onComplete();
@@ -121,6 +117,7 @@ const SchoolLayout: React.FC<SchoolLayoutProps> = ({
         // Only allow left swipe (negative dx) to move sidebar
         if (gestureState.dx < 0) {
           slideAnim.setValue(gestureState.dx);
+          // Keep backdrop at full opacity during swipe (removed instantly on close)
         }
       },
       onPanResponderRelease: (_, gestureState) => {
@@ -129,10 +126,16 @@ const SchoolLayout: React.FC<SchoolLayoutProps> = ({
           animateClose();
         } else {
           // Otherwise, snap back open
-          Animated.spring(slideAnim, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
+          Animated.parallel([
+            Animated.spring(slideAnim, {
+              toValue: 0,
+              useNativeDriver: true,
+            }),
+            Animated.spring(backdropOpacity, {
+              toValue: 0.5,
+              useNativeDriver: true,
+            }),
+          ]).start();
         }
       },
     })
@@ -170,6 +173,14 @@ const SchoolLayout: React.FC<SchoolLayoutProps> = ({
         onRequestClose={handleCloseSidebar}
       >
         <View style={styles.modalOverlay} {...panResponder.panHandlers}>
+          {/* Animated Backdrop - only covers area to the right of sidebar */}
+          <Animated.View
+            style={[
+              styles.backdrop,
+              { opacity: backdropOpacity },
+            ]}
+          />
+
           {/* Animated Sidebar */}
           <Animated.View
             style={[
@@ -187,20 +198,6 @@ const SchoolLayout: React.FC<SchoolLayoutProps> = ({
               onBackToSchools={handleBackToSchools}
             />
           </Animated.View>
-
-          {/* Animated Backdrop */}
-          <TouchableOpacity
-            style={styles.backdrop}
-            onPress={handleCloseSidebar}
-            activeOpacity={1}
-          >
-            <Animated.View
-              style={[
-                styles.backdropOverlay,
-                { opacity: backdropOpacity },
-              ]}
-            />
-          </TouchableOpacity>
         </View>
       </Modal>
     </SafeAreaView>
@@ -241,14 +238,13 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    flexDirection: 'row',
   },
   backdrop: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  backdropOverlay: {
-    flex: 1,
+    position: 'absolute',
+    left: SIDEBAR_WIDTH,
+    right: 0,
+    top: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   sidebarContainer: {
