@@ -74,15 +74,10 @@ const SchoolLayout: React.FC<SchoolLayoutProps> = ({
       <Modal
         visible={sidebarVisible}
         transparent
-        animationType="slide"
-        onRequestClose={() => setSidebarVisible(false)}
+        animationType="none"
+        onRequestClose={() => {}}
       >
         <View style={styles.modalOverlay}>
-          <TouchableOpacity
-            style={styles.backdrop}
-            onPress={() => setSidebarVisible(false)}
-            activeOpacity={1}
-          />
           <View style={styles.sidebarContainer}>
             <SchoolSidebar
               schoolName={schoolName}
@@ -92,6 +87,11 @@ const SchoolLayout: React.FC<SchoolLayoutProps> = ({
               onBackToSchools={handleBackToSchools}
             />
           </View>
+          <TouchableOpacity
+            style={styles.backdrop}
+            onPress={() => {}}
+            activeOpacity={1}
+          />
         </View>
       </Modal>
     </SafeAreaView>
