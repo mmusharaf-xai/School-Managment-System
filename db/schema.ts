@@ -15,7 +15,12 @@ export const users = sqliteTable('users', {
 
 export const schools = sqliteTable('schools', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
+  address: text('address').notNull().unique(),
+  ownerName: text('owner_name'),
+  phoneNumber: text('phone_number'),
+  email: text('email'),
+  logo: text('logo'),
   description: text('description'),
   code: text('code').notNull().unique(),
   createdBy: integer('created_by').notNull(),

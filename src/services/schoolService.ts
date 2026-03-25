@@ -26,6 +26,15 @@ export interface JoinSchoolResult {
   error?: string;
 }
 
+export interface RegisterSchoolData {
+  name: string;
+  address: string;
+  ownerName?: string;
+  phoneNumber?: string;
+  email?: string;
+  logo?: string | null;
+}
+
 /**
  * Generate a unique school code
  */
@@ -108,6 +117,119 @@ export const createSchool = async (
   } catch (error) {
     console.error('Create school error:', error);
     return { success: false, error: 'An error occurred while creating the school' };
+  }
+};
+
+/**
+ * Register a new school with full details
+ */
+export const registerSchool = async (
+  data: RegisterSchoolData,
+  userId: number
+): Promise<SchoolResult> => {
+  try {
+    // Validate required fields
+    if (!data.name || data.name.trim() === '') {
+      return { success: false, error: 'School name is required' };
+    }
+    if (!data.address || data.address.trim() === '') {
+      return { success: false, error: 'Address is required' };
+    }
+
+    const db = getDb();
+    const trimmedName = data.name.trim();
+    const trimmedAddress = data.address.trim();
+    const trimmedOwnerName = data.ownerName?.trim() || null;
+    const trimmedPhoneNumber = data.phoneNumber?.trim() || null;
+    const trimmedEmail = data.email?.trim() || null;
+    const logo = data.logo || null;
+
+    // Check if school name already exists
+    const existingByName = await db
+      .select()
+      .from(schools)
+      .where(eq(schools.name, trimmedName))
+      .limit(1);
+    
+    if (existingByName.length > 0) {
+      return { success: false, error: 'A school with this name already exists' };
+    }
+
+    // Check if address already exists
+    const existingByAddress = await db
+      .select()
+      .from(schools)
+      .where(eq(schools.address, trimmedAddress))
+      .limit(1);
+    
+    if (existingByAddress.length > 0) {
+      return { success: false, error: 'A school with this address already exists' };
+    }
+
+    // Generate a unique code
+    let code = generateSchoolCode();
+    let codeExists = true;
+    let attempts = 0;
+    
+    while (codeExists && attempts < 10) {
+      const existingSchools = await db
+        .select()
+        .from(schools)
+        .where(eq(schools.code, code))
+        .limit(1);
+      
+      if (existingSchools.length === 0) {
+        codeExists = false;
+      } else {
+        code = generateSchoolCode();
+        attempts++;
+      }
+    }
+
+    if (codeExists) {
+      return { success: false, error: 'Failed to generate unique school code' };
+    }
+
+    // Create the school with all fields
+    const schoolData: Record<string, unknown> = {
+      name: trimmedName,
+      address: trimmedAddress,
+      code,
+      createdBy: userId,
+    };
+
+    if (trimmedOwnerName) {
+      schoolData.ownerName = trimmedOwnerName;
+    }
+    if (trimmedPhoneNumber) {
+      schoolData.phoneNumber = trimmedPhoneNumber;
+    }
+    if (trimmedEmail) {
+      schoolData.email = trimmedEmail;
+    }
+    if (logo) {
+      schoolData.logo = logo;
+    }
+
+    const result = await db.insert(schools).values(schoolData as any).returning();
+
+    if (result.length === 0) {
+      return { success: false, error: 'Failed to register school' };
+    }
+
+    const school = result[0];
+
+    // Automatically add the creator as owner
+    await db.insert(userSchools).values({
+      userId: userId,
+      schoolId: school.id,
+      role: 'owner',
+    });
+
+    return { success: true, school };
+  } catch (error) {
+    console.error('Register school error:', error);
+    return { success: false, error: 'An error occurred while registering the school' };
   }
 };
 
